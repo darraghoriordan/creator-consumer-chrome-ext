@@ -1,0 +1,5 @@
+
+html {
+    filter: grayscale(100%);
+    transition: 2s ease-in-out;
+}

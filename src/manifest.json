@@ -1,10 +1,8 @@
 {
   "name": "Creator or Consumer",
-  "description": "A reminder that the web is for creation. Break free from the addictive newsfeed",
+  "description": "The web is for creation. Break free from addictive newsfeeds",
   "version": "1.0",
-  "permissions": [
-    "activeTab"
-  ],
+  "permissions": ["activeTab"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

@@ -2,7 +2,7 @@
   "name": "Creator or Consumer",
   "description": "The web is for creation. Break free from addictive newsfeeds",
   "version": "1.0",
-  "permissions": ["activeTab"],
+  "permissions": ["tabs", "activeTab", "*://*/"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

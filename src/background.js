@@ -1,34 +1,96 @@
-var weAreActive = false;
+// Yay! - fun with globals!
+var greyscaleActive = false;
+var isConsumingFlag = false;
+var immidiateScriptName = "./css/greyscale-immidiate.css";
+var transitionScriptName = "./css/greyscale-timer.css";
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
-  // No tabs or host permissions needed!
-  console.log("Turning " + tab.url + " greyscale!");
-  weAreActive = true;
-  setTimeout(turnOnGreyScaleTransitionAndTabListener, 3000);
+  // Toggle active
+  isConsumingFlag = toggleFlag(isConsumingFlag);
+  //run this to get immidiate feedback on tab
+  consumerOrCreator();
 });
 
-function turnOnGreyScaleTransitionAndTabListener() {
-  turnOnGreyScaleTransition();
-  chrome.tabs.onCreated.addListener(function(tab) {
-    turnOnGreyScaleTransition();
-  });
-}
-function turnOnGreyScaleTransition() {
-  chrome.tabs.insertCSS(null, {
-    file: "./css/greyscale-timer.css"
-  });
+function toggleFlag(flagValue) {
+  if (!flagValue) {
+    return true;
+  }
+  return false;
 }
 
-function restore_options() {
-  // Use default value color = 'red' and likesColor = true.
-  chrome.storage.sync.get(
-    {
-      favoriteColor: "red",
-      likesColor: true
-    },
-    function(items) {
-      document.getElementById("color").value = items.favoriteColor;
-      document.getElementById("like").checked = items.likesColor;
-    }
-  );
+// turn on
+// set isConsuming manually
+// (above will actually be a detection in real extention)
+// interval every second check if isConsuming then
+// if alreadyActive turn on immidiate
+// otherwise turn on with transition
+
+chrome.tabs.onUpdated.addListener(function(tab) {
+  consumerOrCreator();
+});
+
+chrome.tabs.onCreated.addListener(function(tab) {
+  consumerOrCreator();
+});
+
+function consumerOrCreator() {
+  if (greyscaleActive && !isConsuming()) {
+    // if greyscale IS active but we're NOT consuming anymore
+    // turn it off
+    turnOffGreyScale();
+  }
+  if (!greyscaleActive && isConsuming()) {
+    // if greyscale is NOT active but we ARE consuming anymore
+    // turn it on
+    turnOnGreyScaleTransition();
+  }
 }
+
+function isConsuming() {
+  return isConsumingFlag; // just for testing, this will be smarter
+}
+
+function turnOnGreyScaleTransition() {
+  turnOnGreyScale(transitionScriptName);
+}
+
+function turnOnGreyScaleImmidiate() {
+  turnOnGreyScale(immidiateScriptName);
+}
+// cant do this, this is broken
+function turnOffGreyScale() {
+  console.log("Setting greyscale OFF");
+  [immidiateScriptName, transitionScriptName].forEach(function(fileName) {
+    chrome.tabs.removeCSS(null, {
+      file: fileName
+    });
+  });
+  greyscaleActive = false;
+}
+
+function turnOnGreyScale(scriptName) {
+  console.log("Setting greyscale to " + scriptName);
+  chrome.tabs.insertCSS(null, {
+    file: scriptName
+  });
+  greyscaleActive = true;
+}
+
+// save settings
+
+// function save_options() {
+//   chrome.storage.sync.set({
+//     isConsuming: isConsuming
+//   });
+// }
+
+// function restore_options() {
+//   chrome.storage.sync.get(
+//     {
+//       isConsuming: false
+//     },
+//     function(items) {
+//       isConsuming = items.isConsuming;
+//     }
+//   );
+// }

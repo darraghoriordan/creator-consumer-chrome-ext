@@ -9,10 +9,7 @@ var offStylesheetName = "./css/greyscale-off.css";
 var transitionStylesheetName = "./css/greyscale-timer.css";
 var monitorScriptName = "consumerMonitor.js";
 
-// Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
-  // Toggle if the user is actively consuming
-  isConsumingFlag = !isConsumingFlag;
   console.log("on clicked called for " + tab.title);
   injectMonitorScript();
   signalConsuming(greyscaleActiveFlag, isConsuming());
@@ -38,6 +35,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   switch (request.directive) {
     case "text-input-interaction":
       console.log("message request: " + request.directive + " from: " + sender.tab.title);
+      isConsumingFlag = true;
       signalConsuming(greyscaleActiveFlag, isConsuming());
       sendResponse({}); // sending back empty response to sender
       break;

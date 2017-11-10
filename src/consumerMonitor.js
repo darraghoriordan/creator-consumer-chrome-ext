@@ -1,8 +1,20 @@
 console.log("consumerMonitor loaded!");
+var scrollEnabled = true;
 var lastScrollTop = getScrollPosition();
-var scrollLimit = lastScrollTop + 500;
+var scrollLimit = lastScrollTop + 1000;
 
 window.onscroll = function() {
+  if (!scrollEnabled) {
+    return;
+  }
+  scrollEnabled = false;
+  return setTimeout(function() {
+    scrollEnabled = true;
+    scrollEventHandler();
+  }, 250);
+};
+
+function scrollEventHandler() {
   scrollHeight = getScrollPosition();
 
   let limitBroken = scrollHeight >= scrollLimit;
@@ -16,14 +28,17 @@ window.onscroll = function() {
   }
 
   lastScrollTop = scrollHeight;
-};
+}
 
 function getScrollPosition() {
   var body = document.body,
     html = document.documentElement;
 
-  var scrollPosition = (window.pageYOffset || document.scrollTop)  - (document.clientTop || 0);
-
+  var scrollPosition =
+    (window.pageYOffset || document.scrollTop) - (document.clientTop || 0);
+  if (isNaN(scrollPosition)) {
+    return 0;
+  }
   return scrollPosition;
 }
 // function idleLogout() {

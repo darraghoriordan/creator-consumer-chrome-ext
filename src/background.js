@@ -8,11 +8,11 @@ var isConsumingFlag = false;
 var offStylesheetName = "./css/greyscale-off.css";
 var transitionStylesheetName = "./css/greyscale-timer.css";
 var monitorScriptName = "consumerMonitor.js";
+var siteList = ["www.facebook.com"];
 
 chrome.browserAction.onClicked.addListener(function(tab) {
   console.log("on clicked called for " + tab.title);
-  injectMonitorScript();
-  signalConsuming(greyscaleActiveFlag, isConsuming());
+  injectMonitorScript(tab.url);
 });
 
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
@@ -20,15 +20,13 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
     console.log(
       "on updated called for " + tab.title + " because " + info.status
     );
-    injectMonitorScript();
-    signalConsuming(greyscaleActiveFlag, isConsuming());
+    injectMonitorScript(tab.url);
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
-  injectMonitorScript();
-  signalConsuming(greyscaleActiveFlag, isConsuming());
+  injectMonitorScript(tab.url);
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -51,11 +49,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       );
   }
 });
-function injectMonitorScript() {
-  console.log("Inserting monitor script");
-  chrome.tabs.executeScript(null, {
-    file: monitorScriptName
-  });
+function injectMonitorScript(tabUrl) {
+  siteList.forEach(function(element) {
+    if (tabUrl.toLowerCase().indexOf(element) > 0) {
+      console.log("Inserting monitor script");
+      chrome.tabs.executeScript(null, {
+        file: monitorScriptName
+      });
+    }
+  }, this);
 }
 
 function signalConsuming(isConsumingSignalActive, userIsConsuming) {

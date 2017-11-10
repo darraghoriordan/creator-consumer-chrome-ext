@@ -3,7 +3,7 @@
 // for the extension
 
 "use strict";
-var greyscaleActive = false;
+var greyscaleActiveFlag = false;
 var isConsumingFlag = false;
 var offScriptName = "./css/greyscale-off.css";
 var transitionScriptName = "./css/greyscale-timer.css";
@@ -11,64 +11,60 @@ var transitionScriptName = "./css/greyscale-timer.css";
 chrome.browserAction.onClicked.addListener(function(tab) {
   // Toggle if the user is actively consuming
   isConsumingFlag = !isConsumingFlag;
-  consumerOrCreator();
+  console.log("on clicked called for " + tab.title);
+  signalConsuming(greyscaleActiveFlag, isConsuming());
 });
 
-// turn on
-// set isConsuming true
-// (above will actually be a detection in real extention)
-
-// interval every minute check if isConsuming then
-// turn on with transition
-
-chrome.tabs.onUpdated.addListener(function(tab) {
-  consumerOrCreator();
+chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
+  if (info && info.status == "complete") {
+    console.log(
+      "on updated called for " + tab.title + " because " + info.status
+    );
+    signalConsuming(greyscaleActiveFlag, isConsuming());
+  }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
-  consumerOrCreator();
+  console.log("on created called for " + tab.title);
+  signalConsuming(greyscaleActiveFlag, isConsuming());
 });
 
-function consumerOrCreator() {
-  // if greyscale IS active but we're NOT consuming anymore
-  if (greyscaleActive && !isConsuming()) {
-    // turn it off
+function signalConsuming(isConsumingSignalActive, userIsConsuming) {
+  console.log("is consuming:" + isConsumingSignalActive);
+  console.log("signalActive:" + userIsConsuming);
+  if (isConsumingSignalActive && !userIsConsuming) {
     turnOffGreyScale();
   }
-  // if greyscale is NOT active but we ARE consuming anymore
-  if (!greyscaleActive && isConsuming()) {    
-    // turn it on
-    turnOnGreyScaleTransition();
+
+  if (!isConsumingSignalActive && userIsConsuming) {
+    turnOnGreyScale();
   }
 }
 
+// consumingDetector script checks if isConsuming then passes message to background.js when detected
 function isConsuming() {
   // IsConsuming detection
-// if onShittySite -> remove and block hooks (inbox counts / notification counts / infinite scroll)
-// isconsuming = onShittySite + delta scrolly / minute > 1000
-// reset isconsuming on a form 
+  // if onShittySite -> remove and block hooks (inbox counts / notification counts / infinite scroll)
+  // isconsuming = onShittySite + delta scrolly / minute > 1000
+  // reset isconsuming on a form
   return isConsumingFlag; // just for testing, this will be smarter
 }
 
-function turnOnGreyScaleTransition() {
-  turnOnGreyScale(transitionScriptName);
-}
-
-// cant do this, this is broken
 function turnOffGreyScale() {
-  console.log("Setting greyscale OFF");
-  chrome.tabs.insertCSS(null, {
-    file: offScriptName
-  });
-  greyscaleActive = false;
+  setGreyscale(offScriptName);
+  greyscaleActiveFlag = false;
 }
 
-function turnOnGreyScale(scriptName) {
+function turnOnGreyScale() {
+  setGreyscale(transitionScriptName);
+  greyscaleActiveFlag = true;
+}
+
+function setGreyscale(scriptName) {
   console.log("Setting greyscale to " + scriptName);
   chrome.tabs.insertCSS(null, {
     file: scriptName
   });
-  greyscaleActive = true;
 }
 
 // save settings

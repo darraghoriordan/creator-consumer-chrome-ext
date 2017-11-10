@@ -5,7 +5,6 @@
 "use strict";
 var greyscaleActive = false;
 var isConsumingFlag = false;
-var imidiateScriptName = "./css/greyscale-imidiate.css";
 var offScriptName = "./css/greyscale-off.css";
 var transitionScriptName = "./css/greyscale-timer.css";
 // Called when the user clicks on the browser action.
@@ -55,9 +54,6 @@ function turnOnGreyScaleTransition() {
   turnOnGreyScale(transitionScriptName);
 }
 
-function turnOnGreyScaleImidiate() {
-  turnOnGreyScale(imidiateScriptName);
-}
 // cant do this, this is broken
 function turnOffGreyScale() {
   console.log("Setting greyscale OFF");

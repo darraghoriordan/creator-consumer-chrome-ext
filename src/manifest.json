@@ -1,12 +1,16 @@
 {
   "name": "Creator or Consumer",
   "description": "The web is for creation. Break free from addictive newsfeeds",
-  "version": "1.0",
+  "version": "1.0.0",
   "permissions": ["tabs", "activeTab", "*://*/"],
   "background": {
     "scripts": ["background.js"],
     "persistent": false
   },
+  // don't need to register when programaitcally injected
+  // "content_scripts":{
+  //   "css": ["css/greyscale-imidiate.css", "css/greyscale-timer.css"]
+  // },
   "browser_action": {
     "default_title": "Creator or Consumer"
   },

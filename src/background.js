@@ -34,7 +34,9 @@ chrome.tabs.onCreated.addListener(function(tab) {
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   switch (request.directive) {
     case "text-input-interaction":
-      console.log("message request: " + request.directive + " from: " + sender.tab.title);
+      console.log(
+        "message request: " + request.directive + " from: " + sender.tab.title
+      );
       isConsumingFlag = true;
       signalConsuming(greyscaleActiveFlag, isConsuming());
       sendResponse({}); // sending back empty response to sender
@@ -59,11 +61,9 @@ function injectMonitorScript() {
 function signalConsuming(isConsumingSignalActive, userIsConsuming) {
   console.log("is consuming:" + isConsumingSignalActive);
   console.log("signalActive:" + userIsConsuming);
-  if (isConsumingSignalActive && !userIsConsuming) {
+  if (!userIsConsuming) {
     turnOffGreyScale();
-  }
-
-  if (!isConsumingSignalActive && userIsConsuming) {
+  } else {
     turnOnGreyScale();
   }
 }

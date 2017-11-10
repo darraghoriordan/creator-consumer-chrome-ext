@@ -11,6 +11,8 @@ window.onscroll = function() {
   return setTimeout(function() {
     scrollEnabled = true;
     scrollEventHandler();
+    //reset the scroll pos
+    lastScrollTop = getScrollPosition();
   }, 250);
 };
 

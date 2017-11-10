@@ -5,13 +5,16 @@
 "use strict";
 var greyscaleActiveFlag = false;
 var isConsumingFlag = false;
-var offScriptName = "./css/greyscale-off.css";
-var transitionScriptName = "./css/greyscale-timer.css";
+var offStylesheetName = "./css/greyscale-off.css";
+var transitionStylesheetName = "./css/greyscale-timer.css";
+var monitorScriptName = "consumerMonitor.js";
+
 // Called when the user clicks on the browser action.
 chrome.browserAction.onClicked.addListener(function(tab) {
   // Toggle if the user is actively consuming
   isConsumingFlag = !isConsumingFlag;
   console.log("on clicked called for " + tab.title);
+  injectMonitorScript();
   signalConsuming(greyscaleActiveFlag, isConsuming());
 });
 
@@ -20,14 +23,40 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
     console.log(
       "on updated called for " + tab.title + " because " + info.status
     );
+    injectMonitorScript();
     signalConsuming(greyscaleActiveFlag, isConsuming());
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
+  injectMonitorScript();
   signalConsuming(greyscaleActiveFlag, isConsuming());
 });
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  switch (request.directive) {
+    case "text-input-interaction":
+      console.log("message request: " + request.directive + " from: " + sender.tab.title);
+      signalConsuming(greyscaleActiveFlag, isConsuming());
+      sendResponse({}); // sending back empty response to sender
+      break;
+    default:
+      // helps debug when request directive doesn't match
+      console.log(
+        "Unmatched request of '" +
+          request +
+          "' from script to background.js from " +
+          sender
+      );
+  }
+});
+function injectMonitorScript() {
+  console.log("Inserting monitor script");
+  chrome.tabs.executeScript(null, {
+    file: monitorScriptName
+  });
+}
 
 function signalConsuming(isConsumingSignalActive, userIsConsuming) {
   console.log("is consuming:" + isConsumingSignalActive);
@@ -51,12 +80,12 @@ function isConsuming() {
 }
 
 function turnOffGreyScale() {
-  setGreyscale(offScriptName);
+  setGreyscale(offStylesheetName);
   greyscaleActiveFlag = false;
 }
 
 function turnOnGreyScale() {
-  setGreyscale(transitionScriptName);
+  setGreyscale(transitionStylesheetName);
   greyscaleActiveFlag = true;
 }
 

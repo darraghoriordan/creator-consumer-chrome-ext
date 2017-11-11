@@ -23,10 +23,9 @@ function scrollEventHandler() {
   let scrollingDown = scrollHeight > lastScrollTop;
 
   if (scrollingDown && limitBroken) {
-    chrome.runtime.sendMessage(
-      { directive: "text-input-interaction" },
-      function(response) {}
-    );
+    chrome.runtime.sendMessage({ directive: "scroll-limit-exceeded" }, function(
+      response
+    ) {});
   }
 
   lastScrollTop = scrollHeight;
@@ -43,6 +42,12 @@ function getScrollPosition() {
   }
   return scrollPosition;
 }
+
+chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
+  if (request.directive == "apply-notification-styles") {
+    alert("applying styles!");
+  }
+});
 // function idleLogout() {
 //     var t;
 //     window.onload = resetTimer;

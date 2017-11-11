@@ -1,18 +1,23 @@
-// Yay! - fun with globals!
-// i think chrome puts these in some kind of sandbox context
-// for the extension
-
 "use strict";
-var greyscaleActiveFlag = false;
-var isConsumingFlag = false;
 var offStylesheetName = "./css/greyscale-off.css";
 var transitionStylesheetName = "./css/greyscale-timer.css";
+var notificationDisruptionStylesheetName =
+  "./css/disrupt-notification-hooks.css";
 var monitorScriptName = "consumerMonitor.js";
-var siteList = ["www.facebook.com"];
+var siteList = [
+  "www.facebook.com",
+  "www.twitter.com",
+  "www.pinterest.com",
+  "www.linkedin.com"
+];
+(function initialiseExtension() {
+  badgeIsInitialised(setActiveCallBack);
+})();
 
 chrome.browserAction.onClicked.addListener(function(tab) {
-  console.log("on clicked called for " + tab.title);
-  injectMonitorScript(tab.url);
+  console.log("browser action clicked called for " + tab.title);
+  extensionIsActive(toggleExtensionActive);
+  turnOffGreyScale();
 });
 
 chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
@@ -20,27 +25,26 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
     console.log(
       "on updated called for " + tab.title + " because " + info.status
     );
-    injectMonitorScript(tab.url);
+    injectSumtorScripts(tab.url);
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
-  injectMonitorScript(tab.url);
+  injectSumtorScripts(tab.url);
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   switch (request.directive) {
-    case "text-input-interaction":
+    case "scroll-limit-exceeded":
       console.log(
         "message request: " + request.directive + " from: " + sender.tab.title
       );
-      isConsumingFlag = true;
-      signalConsuming(greyscaleActiveFlag, isConsuming());
+      extensionIsActive(setGreyscaleCallBack);
+
       sendResponse({}); // sending back empty response to sender
       break;
     default:
-      // helps debug when request directive doesn't match
       console.log(
         "Unmatched request of '" +
           request +
@@ -49,53 +53,92 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       );
   }
 });
-function injectMonitorScript(tabUrl) {
+function badgeIsInitialised(callback) {
+  chrome.browserAction.getBadgeText({}, function(result) {
+    var isInitialised = !!result || (result = "");
+    callback(isInitialised);
+  });
+}
+
+function extensionIsActive(callback) {
+  chrome.browserAction.getBadgeText({}, function(result) {
+    var extensionIsActive = result === "on";
+    callback(extensionIsActive);
+  });
+}
+
+function toggleExtensionActive(currentValue) {
+  if (currentValue) {
+    console.log("turning off extension");
+    turnOffExtension();
+    return;
+  }
+  console.log("turning on extension");
+  turnOnExtension();
+}
+
+function turnOffExtension() {
+  chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+  chrome.browserAction.setBadgeText({ text: "off" });
+}
+
+function turnOnExtension() {
+  chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+  chrome.browserAction.setBadgeText({ text: "on" });
+}
+
+function injectSumtorScripts(tabUrl) {
   siteList.forEach(function(element) {
     if (tabUrl.toLowerCase().indexOf(element) > 0) {
-      console.log("Inserting monitor script");
-      chrome.tabs.executeScript(null, {
-        file: monitorScriptName
-      });
+      injectStylesheet(notificationDisruptionStylesheetName);
+      injectMonitorScript();
     }
   }, this);
 }
+function injectMonitorScript() {
+  console.log("Inserting monitor script");
+  chrome.tabs.executeScript(null, {
+    file: monitorScriptName
+  });
+}
+function setActiveCallBack(badgeInitialised) {
+  if (!badgeInitialised) {
+    turnOnExtension();
+  }
+}
 
-function signalConsuming(isConsumingSignalActive, userIsConsuming) {
-  console.log("is consuming:" + isConsumingSignalActive);
-  console.log("signalActive:" + userIsConsuming);
-  if (!userIsConsuming) {
-    turnOffGreyScale();
-  } else {
+function setGreyscaleCallBack(activeStatus) {
+  if (activeStatus) {
     turnOnGreyScale();
   }
 }
 
-// consumingDetector script checks if isConsuming then passes message to background.js when detected
-function isConsuming() {
-  // IsConsuming detection
-  // if onShittySite -> remove and block hooks (inbox counts / notification counts / infinite scroll)
-  // isconsuming = onShittySite + delta scrolly / minute > 1000
-  // reset isconsuming on a form
-  return isConsumingFlag; // just for testing, this will be smarter
-}
-
 function turnOffGreyScale() {
-  setGreyscale(offStylesheetName);
-  greyscaleActiveFlag = false;
+  injectStylesheet(offStylesheetName);
 }
 
 function turnOnGreyScale() {
-  setGreyscale(transitionStylesheetName);
-  greyscaleActiveFlag = true;
+  injectStylesheet(transitionStylesheetName);
 }
 
-function setGreyscale(scriptName) {
-  console.log("Setting greyscale to " + scriptName);
+function injectStylesheet(scriptName) {
+  console.log("inserting stylesheet " + scriptName);
   chrome.tabs.insertCSS(null, {
     file: scriptName
   });
 }
 
+function applyNotificationStyles() {
+  chrome.tabs.query({}, function(tabs) {
+    tabs.foreach(function(item) {
+      chrome.tabs.sendMessage(
+        item.id,
+        { directive: "apply-notification-styles" },
+        function(response) {}
+      );
+    });
+  });
+}
 // save settings
 
 // function save_options() {

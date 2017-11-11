@@ -1,5 +1,16 @@
-
 html {
-    filter: grayscale(100%);
-    transition: 2s ease-in-out;
+  filter: grayscale(100%);
+  transition: 2s ease-in-out;
+}
+/* linkedin is nav-item__badge */
+.nav-item__badge {
+  display: none;
+}
+/* facebook is jewelCount */
+.jewelCount {
+  display: none;
+}
+/*  twitter is .global-nav .count */
+.count {
+  display: none;
 }

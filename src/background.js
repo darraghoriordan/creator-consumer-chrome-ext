@@ -25,10 +25,11 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
     extensionIsActive(applyConstantPageMods);
   }
 });
-// maybe this doesn't need to be here - just updated
+
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
   injectSumtorScripts(tab.url);
+  extensionIsActive(applyConstantPageMods);
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -77,12 +78,12 @@ function toggleExtensionActive(currentValue) {
 }
 
 function setBadgeTextOff() {
-  chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+  chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000'});
   chrome.browserAction.setBadgeText({ text: "off" });
 }
 
 function setBadgeTextOn() {
-  chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
+  chrome.browserAction.setBadgeBackgroundColor({ color: '#30a730'});
   chrome.browserAction.setBadgeText({ text: "on" });
 }
 
@@ -137,6 +138,7 @@ function applyConstantPageMods(extensionActive){
 function turnOffDisruptiveNotificationStyles() {
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(item) {
+      console.log("sending stop disrupting notifications message to " + item.title);
       chrome.tabs.sendMessage(
         item.id,
         { directive: "turn-off-notification-styles" },
@@ -149,6 +151,7 @@ function turnOffDisruptiveNotificationStyles() {
 function applyDisruptiveNotificationStyles() {
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(item) {
+      console.log("sending disrupt notifications message to " + item.title);
       chrome.tabs.sendMessage(
         item.id,
         { directive: "apply-notification-styles" },
@@ -157,21 +160,21 @@ function applyDisruptiveNotificationStyles() {
     });
   });
 }
-// save settings
 
-// function save_options() {
-//   chrome.storage.sync.set({
-//     isConsuming: isConsuming
-//   });
-// }
 
-// function restore_options() {
-//   chrome.storage.sync.get(
-//     {
-//       isConsuming: false
-//     },
-//     function(items) {
-//       isConsuming = items.isConsuming;
-//     }
-//   );
-// }
+function save_options() {
+  chrome.storage.sync.set({
+    isConsuming: isConsuming
+  });
+}
+
+function restore_options() {
+  chrome.storage.sync.get(
+    {
+      isConsuming: false
+    },
+    function(items) {
+      isConsuming = items.isConsuming;
+    }
+  );
+}

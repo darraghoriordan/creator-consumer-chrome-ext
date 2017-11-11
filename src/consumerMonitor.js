@@ -3,6 +3,7 @@ var scrollEnabled = true;
 var lastScrollTop = getScrollPosition();
 var scrollLimit = lastScrollTop + 1000;
 var scrollDetectionDebounce = 2000;
+var titleTimer; 
 
 window.onscroll = function() {
   if (!scrollEnabled) {
@@ -24,9 +25,18 @@ function scrollEventHandler() {
   let scrollingDown = scrollHeight > lastScrollTop;
 
   if (scrollingDown && limitBroken) {
-    chrome.runtime.sendMessage({ directive: "scroll-limit-exceeded" }, function(
-      response
-    ) {});
+    try {
+      chrome.runtime.sendMessage(
+        { directive: "scroll-limit-exceeded" },
+        function(response) {}
+      );
+    } catch (e) {
+      // Happens when parent extension is no longer available or was reloaded
+      console.warn(
+        "Could not communicate with parent extension, deregistering observer"
+      );
+      observer.disconnect();
+    }
   }
 
   lastScrollTop = scrollHeight;
@@ -49,10 +59,15 @@ function applyStylesToCounters(htmlElementCollection) {
   });
 }
 function removeStylesFromCounters(htmlElementCollection) {
-    [].forEach.call(htmlElementCollection, function(element) {
-      element.classList.remove("sumtor-hide-notification");
-    });
-  }
+  [].forEach.call(htmlElementCollection, function(element) {
+    element.classList.remove("sumtor-hide-notification");
+  });
+}
+function changeTitle() {
+  var regExp = /\(([^)]+)\)/;
+  document.title = document.title.replace(regExp, "");
+}
+
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.directive == "apply-notification-styles") {
     //apply for each site - maybe this can be pulled in through config laters
@@ -63,6 +78,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     applyStylesToCounters(document.getElementsByClassName("count"));
     /* linkedin is nav-item__badge */
     applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
+
+    titleTimer = setInterval(function() {
+        changeTitle();
+      }, 1000);
   }
   if (request.directive == "turn-off-notification-styles") {
     //apply for each site - maybe this can be pulled in through config laters
@@ -72,7 +91,10 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     /*  twitter is .global-nav .count */
     removeStylesFromCounters(document.getElementsByClassName("count"));
     /* linkedin is nav-item__badge */
-    removeStylesFromCounters(document.getElementsByClassName("nav-item__badge"));
+    removeStylesFromCounters(
+      document.getElementsByClassName("nav-item__badge")
+    );
+    clearInterval(titleTimer);
   }
 });
 // function idleLogout() {

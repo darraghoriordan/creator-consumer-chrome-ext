@@ -2,6 +2,7 @@ console.log("consumerMonitor loaded!");
 var scrollEnabled = true;
 var lastScrollTop = getScrollPosition();
 var scrollLimit = lastScrollTop + 1000;
+var scrollDetectionDebounce = 2000;
 
 window.onscroll = function() {
   if (!scrollEnabled) {
@@ -13,7 +14,7 @@ window.onscroll = function() {
     scrollEventHandler();
     //reset the scroll pos
     lastScrollTop = getScrollPosition();
-  }, 250);
+  }, scrollDetectionDebounce);
 };
 
 function scrollEventHandler() {
@@ -42,10 +43,36 @@ function getScrollPosition() {
   }
   return scrollPosition;
 }
-
+function applyStylesToCounters(htmlElementCollection) {
+  [].forEach.call(htmlElementCollection, function(element) {
+    element.classList.add("sumtor-hide-notification");
+  });
+}
+function removeStylesFromCounters(htmlElementCollection) {
+    [].forEach.call(htmlElementCollection, function(element) {
+      element.classList.remove("sumtor-hide-notification");
+    });
+  }
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.directive == "apply-notification-styles") {
-    alert("applying styles!");
+    //apply for each site - maybe this can be pulled in through config laters
+    // and only run the correct one for the page/tab
+    /* facebook is jewelCount */
+    applyStylesToCounters(document.getElementsByClassName("jewelCount"));
+    /*  twitter is .global-nav .count */
+    applyStylesToCounters(document.getElementsByClassName("count"));
+    /* linkedin is nav-item__badge */
+    applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
+  }
+  if (request.directive == "turn-off-notification-styles") {
+    //apply for each site - maybe this can be pulled in through config laters
+    // and only run the correct one for the page/tab
+    /* facebook is jewelCount */
+    removeStylesFromCounters(document.getElementsByClassName("jewelCount"));
+    /*  twitter is .global-nav .count */
+    removeStylesFromCounters(document.getElementsByClassName("count"));
+    /* linkedin is nav-item__badge */
+    removeStylesFromCounters(document.getElementsByClassName("nav-item__badge"));
   }
 });
 // function idleLogout() {

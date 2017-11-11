@@ -4,14 +4,10 @@ var transitionStylesheetName = "./css/greyscale-timer.css";
 var notificationDisruptionStylesheetName =
   "./css/disrupt-notification-hooks.css";
 var monitorScriptName = "consumerMonitor.js";
-var siteList = [
-  "www.facebook.com",
-  "www.twitter.com",
-  "www.pinterest.com",
-  "www.linkedin.com"
-];
+var siteList = ["facebook.com", "twitter.com", "pinterest.com", "linkedin.com"];
+
 (function initialiseExtension() {
-  badgeIsInitialised(setActiveCallBack);
+  badgeIsInitialised(initialiseBadgeCallback);
 })();
 
 chrome.browserAction.onClicked.addListener(function(tab) {
@@ -26,9 +22,10 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
       "on updated called for " + tab.title + " because " + info.status
     );
     injectSumtorScripts(tab.url);
+    extensionIsActive(applyConstantPageMods);
   }
 });
-
+// maybe this doesn't need to be here - just updated
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
   injectSumtorScripts(tab.url);
@@ -70,19 +67,21 @@ function extensionIsActive(callback) {
 function toggleExtensionActive(currentValue) {
   if (currentValue) {
     console.log("turning off extension");
-    turnOffExtension();
+    setBadgeTextOff();
+    turnOffDisruptiveNotificationStyles();
     return;
   }
   console.log("turning on extension");
-  turnOnExtension();
+  setBadgeTextOn();
+  applyDisruptiveNotificationStyles();
 }
 
-function turnOffExtension() {
+function setBadgeTextOff() {
   chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
   chrome.browserAction.setBadgeText({ text: "off" });
 }
 
-function turnOnExtension() {
+function setBadgeTextOn() {
   chrome.browserAction.setBadgeBackgroundColor({ color: [190, 190, 190, 230] });
   chrome.browserAction.setBadgeText({ text: "on" });
 }
@@ -101,9 +100,9 @@ function injectMonitorScript() {
     file: monitorScriptName
   });
 }
-function setActiveCallBack(badgeInitialised) {
+function initialiseBadgeCallback(badgeInitialised) {
   if (!badgeInitialised) {
-    turnOnExtension();
+    setBadgeTextOn();
   }
 }
 
@@ -128,9 +127,28 @@ function injectStylesheet(scriptName) {
   });
 }
 
-function applyNotificationStyles() {
+function applyConstantPageMods(extensionActive){
+  if (extensionActive)
+  {
+    applyDisruptiveNotificationStyles();
+  }
+}
+
+function turnOffDisruptiveNotificationStyles() {
   chrome.tabs.query({}, function(tabs) {
-    tabs.foreach(function(item) {
+    tabs.forEach(function(item) {
+      chrome.tabs.sendMessage(
+        item.id,
+        { directive: "turn-off-notification-styles" },
+        function(response) {}
+      );
+    });
+  });
+}
+
+function applyDisruptiveNotificationStyles() {
+  chrome.tabs.query({}, function(tabs) {
+    tabs.forEach(function(item) {
       chrome.tabs.sendMessage(
         item.id,
         { directive: "apply-notification-styles" },

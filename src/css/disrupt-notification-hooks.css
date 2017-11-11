@@ -1,15 +1,17 @@
 /* linkedin is nav-item__badge */
-.nav-item__badge {
+  /* facebook is jewelCount */
+    /*  twitter is .global-nav .count */ 
+/* .nav-item__badge {
     display: none;
   }
-  /* facebook is jewelCount */
+
   .jewelCount {
     display: none;
   }
-  /*  twitter is .global-nav .count */
+
   .count {
     display: none;
-  }
+  } */
 
   .sumtor-hide-notification{
       display:none !important;

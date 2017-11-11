@@ -13,10 +13,6 @@
     "48": "icons/cru_logo_sq48.png",
     "128": "icons/cru_logo_sq128.png"
   },
-  // don't need to register when programaitcally injected
-  // "content_scripts":{
-  //   "css": ["css/greyscale-imidiate.css", "css/greyscale-timer.css"]
-  // },
   "browser_action": {
     "default_title": "Cruhahore"
   },

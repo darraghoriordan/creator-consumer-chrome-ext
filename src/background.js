@@ -76,12 +76,12 @@ function extensionIsActive(callback) {
 
 function toggleExtensionActive(currentValue) {
   if (currentValue) {
-    console.log("turning off extension");
+    console.log("turning off cruhahore extension");
     setBadgeTextOff();
     turnOffDisruptiveNotificationStyles();
     return;
   }
-  console.log("turning on extension");
+  console.log("turning on cruhahore extension");
   setBadgeTextOn();
   applyDisruptiveNotificationStyles();
 }
@@ -113,12 +113,12 @@ function isInSiteList(tab, callback) {
 }
 
 function injectSumtorScripts(tabItem) {
+  console.log("Inserting monitor script to " + tabItem.title);
   injectStylesheet(notificationDisruptionStylesheetName);
   injectMonitorScript();
 }
 
 function injectMonitorScript() {
-  console.log("Inserting monitor script");
   chrome.tabs.executeScript(null, {
     file: monitorScriptName
   });

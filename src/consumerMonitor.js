@@ -13,8 +13,6 @@ window.onscroll = function() {
   return setTimeout(function() {
     scrollEnabled = true;
     scrollEventHandler();
-    //reset the scroll pos
-    lastScrollTop = getScrollPosition();
   }, scrollDetectionDebounce);
 };
 
@@ -30,6 +28,8 @@ function scrollEventHandler() {
         { directive: "scroll-limit-exceeded" },
         function(response) {}
       );
+      //reset the scroll pos
+      lastScrollTop = getScrollPosition();
     } catch (e) {
       // Happens when parent extension is no longer available or was reloaded
       if (
@@ -44,8 +44,6 @@ function scrollEventHandler() {
       }
     }
   }
-
-  lastScrollTop = scrollHeight;
 }
 
 function getScrollPosition() {

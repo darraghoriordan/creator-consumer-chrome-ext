@@ -21,7 +21,7 @@ window.onscroll = function() {
 function scrollEventHandler() {
   scrollHeight = getScrollPosition();
 
-  let limitBroken = scrollHeight >= (lastScrollTop + scrollLimit);
+  let limitBroken = scrollHeight >= lastScrollTop + scrollLimit;
   let scrollingDown = scrollHeight > lastScrollTop;
 
   if (scrollingDown && limitBroken) {
@@ -43,7 +43,6 @@ function scrollEventHandler() {
         throw e;
       }
     }
-
   }
 
   lastScrollTop = scrollHeight;
@@ -79,6 +78,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.directive == "apply-notification-styles") {
     //apply for each site - maybe this can be pulled in through config laters
     // and only run the correct one for the page/tab
+    // or at least in to array. just lazy for now.
     /* facebook is jewelCount */
     applyStylesToCounters(document.getElementsByClassName("jewelCount"));
     /* facebook likes is _ipp */

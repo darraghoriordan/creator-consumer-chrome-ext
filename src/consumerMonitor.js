@@ -2,7 +2,7 @@ console.log("consumerMonitor loaded!");
 var scrollEnabled = true;
 var lastScrollTop = getScrollPosition();
 var scrollLimit = lastScrollTop + 3000;
-var scrollDetectionDebounce = 2000;
+var scrollDetectionDebounce = 3000;
 var titleTimer;
 
 window.onscroll = function() {
@@ -32,10 +32,16 @@ function scrollEventHandler() {
       );
     } catch (e) {
       // Happens when parent extension is no longer available or was reloaded
-      console.warn(
-        "Could not communicate with parent extension, deregistering observer"
-      );
-      observer.disconnect();
+      if (
+        e.message.match(/Invocation of form runtime\.connect/) &&
+        e.message.match(/doesn't match definition runtime\.connect/)
+      ) {
+        console.error(
+          "Chrome extension, Cruhahore has been reloaded. Please refresh the page"
+        );
+      } else {
+        throw e;
+      }
     }
   }
 
@@ -86,9 +92,12 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     );
     /* twitter new tweets bar */
     applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
+
     /* linkedin is nav-item__badge */
     applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
-
+    applyStylesToCounters(
+      document.getElementsByClassName("feed-base-social-counts")
+    );
     titleTimer = setInterval(function() {
       changeTitle();
     }, 1000);
@@ -107,18 +116,3 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     clearInterval(titleTimer);
   }
 });
-// function idleLogout() {
-//     var t;
-//     window.onload = resetTimer;
-//    // window.onkeypress = resetTimer;
-
-//     function logout() {
-//         window.location.href = 'logout.php';
-//     }
-
-//     function resetTimer() {
-//         clearTimeout(t);
-//         t = setTimeout(logout, 10000);  // time is in milliseconds
-//     }
-// }
-// idleLogout();

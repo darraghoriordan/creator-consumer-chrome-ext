@@ -21,14 +21,14 @@ chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
     console.log(
       "on updated called for " + tab.title + " because " + info.status
     );
-    injectSumtorScripts(tab.url);
+    isInSiteList(tab, injectSumtorScripts);
     extensionIsActive(applyConstantPageMods);
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
-  injectSumtorScripts(tab.url);
+  isInSiteList(tab, injectSumtorScripts);
   extensionIsActive(applyConstantPageMods);
 });
 
@@ -51,6 +51,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       );
   }
 });
+
 function badgeIsInitialised(callback) {
   chrome.browserAction.getBadgeText({}, function(result) {
     var isInitialised = !!result || (result = "");
@@ -78,29 +79,43 @@ function toggleExtensionActive(currentValue) {
 }
 
 function setBadgeTextOff() {
-  chrome.browserAction.setBadgeBackgroundColor({ color: '#FF0000'});
-  chrome.browserAction.setBadgeText({ text: "off" });
+  chrome.browserAction.setBadgeBackgroundColor({
+    color: "#FF0000"
+  });
+  chrome.browserAction.setBadgeText({
+    text: "off"
+  });
 }
 
 function setBadgeTextOn() {
-  chrome.browserAction.setBadgeBackgroundColor({ color: '#30a730'});
-  chrome.browserAction.setBadgeText({ text: "on" });
+  chrome.browserAction.setBadgeBackgroundColor({
+    color: "#30a730"
+  });
+  chrome.browserAction.setBadgeText({
+    text: "on"
+  });
 }
 
-function injectSumtorScripts(tabUrl) {
+function isInSiteList(tab, callback) {
   siteList.forEach(function(element) {
-    if (tabUrl.toLowerCase().indexOf(element) > 0) {
-      injectStylesheet(notificationDisruptionStylesheetName);
-      injectMonitorScript();
+    if (tab.url.toLowerCase().indexOf(element) > 0) {
+      callback(tab);
     }
   }, this);
 }
+
+function injectSumtorScripts(tabItem) {
+  injectStylesheet(notificationDisruptionStylesheetName);
+  injectMonitorScript();
+}
+
 function injectMonitorScript() {
   console.log("Inserting monitor script");
   chrome.tabs.executeScript(null, {
     file: monitorScriptName
   });
 }
+
 function initialiseBadgeCallback(badgeInitialised) {
   if (!badgeInitialised) {
     setBadgeTextOn();
@@ -128,9 +143,8 @@ function injectStylesheet(scriptName) {
   });
 }
 
-function applyConstantPageMods(extensionActive){
-  if (extensionActive)
-  {
+function applyConstantPageMods(extensionActive) {
+  if (extensionActive) {
     applyDisruptiveNotificationStyles();
   }
 }
@@ -138,12 +152,18 @@ function applyConstantPageMods(extensionActive){
 function turnOffDisruptiveNotificationStyles() {
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(item) {
-      console.log("sending stop disrupting notifications message to " + item.title);
-      chrome.tabs.sendMessage(
-        item.id,
-        { directive: "turn-off-notification-styles" },
-        function(response) {}
-      );
+      isInSiteList(item, function(item) {
+        console.log(
+          "sending stop disrupting notifications message to " + item.title
+        );
+        chrome.tabs.sendMessage(
+          item.id,
+          {
+            directive: "turn-off-notification-styles"
+          },
+          function(response) {}
+        );
+      });
     });
   });
 }
@@ -151,30 +171,16 @@ function turnOffDisruptiveNotificationStyles() {
 function applyDisruptiveNotificationStyles() {
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(item) {
-      console.log("sending disrupt notifications message to " + item.title);
-      chrome.tabs.sendMessage(
-        item.id,
-        { directive: "apply-notification-styles" },
-        function(response) {}
-      );
+      isInSiteList(item, function(item) {
+        console.log("sending disrupt notifications message to " + item.title);
+        chrome.tabs.sendMessage(
+          item.id,
+          {
+            directive: "apply-notification-styles"
+          },
+          function(response) {}
+        );
+      });
     });
   });
-}
-
-
-function save_options() {
-  chrome.storage.sync.set({
-    isConsuming: isConsuming
-  });
-}
-
-function restore_options() {
-  chrome.storage.sync.get(
-    {
-      isConsuming: false
-    },
-    function(items) {
-      isConsuming = items.isConsuming;
-    }
-  );
 }

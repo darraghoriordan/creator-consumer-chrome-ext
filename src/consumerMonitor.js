@@ -21,7 +21,7 @@ window.onscroll = function() {
 function scrollEventHandler() {
   scrollHeight = getScrollPosition();
 
-  let limitBroken = scrollHeight >= scrollLimit;
+  let limitBroken = scrollHeight >= (lastScrollTop + scrollLimit);
   let scrollingDown = scrollHeight > lastScrollTop;
 
   if (scrollingDown && limitBroken) {
@@ -43,6 +43,7 @@ function scrollEventHandler() {
         throw e;
       }
     }
+
   }
 
   lastScrollTop = scrollHeight;
@@ -105,26 +106,29 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.directive == "turn-off-notification-styles") {
     //apply for each site - maybe this can be pulled in through config laters
     // and only run the correct one for the page/tab
-   /* facebook is jewelCount */
-   removeStylesFromCounters(document.getElementsByClassName("jewelCount"));
-   /* facebook likes is _ipp */
-   removeStylesFromCounters(document.getElementsByClassName("_ipp"));
-   /*  twitter is .global-nav .count */
-   removeStylesFromCounters(document.getElementsByClassName("count"));
-   /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
-   removeStylesFromCounters(document.getElementsByClassName("new-tweets-bar"));
-   /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
-   removeStylesFromCounters(
-     document.getElementsByClassName("ProfileTweet-action--favorite")
-   );
-   /* twitter new tweets bar */
-   removeStylesFromCounters(document.getElementsByClassName("new-tweets-bar"));
+    /* facebook is jewelCount */
+    removeStylesFromCounters(document.getElementsByClassName("jewelCount"));
+    /* facebook likes is _ipp */
+    removeStylesFromCounters(document.getElementsByClassName("_ipp"));
+    /*  twitter is .global-nav .count */
+    removeStylesFromCounters(document.getElementsByClassName("count"));
+    /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
+    removeStylesFromCounters(document.getElementsByClassName("new-tweets-bar"));
+    /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
+    removeStylesFromCounters(
+      document.getElementsByClassName("ProfileTweet-action--favorite")
+    );
+    /* twitter new tweets bar */
+    removeStylesFromCounters(document.getElementsByClassName("new-tweets-bar"));
 
-   /* linkedin is nav-item__badge */
-   removeStylesFromCounters(document.getElementsByClassName("nav-item__badge"));
-   removeStylesFromCounters(
-     document.getElementsByClassName("feed-base-social-counts");
-     
+    /* linkedin is nav-item__badge */
+    removeStylesFromCounters(
+      document.getElementsByClassName("nav-item__badge")
+    );
+    removeStylesFromCounters(
+      document.getElementsByClassName("feed-base-social-counts")
+    );
+
     clearInterval(titleTimer);
   }
 });

@@ -41,6 +41,14 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       extensionIsActive(setGreyscaleCallBack);
 
       sendResponse({}); // sending back empty response to sender
+      var appIconUrl = chrome.runtime.getURL("/icons/cru_logo_sq128.png");
+      chrome.notifications.create(null, {
+        type: "basic",
+        title: "Uh-Oh! You're getting lost",
+        message: "It looks like you're getting lost in the feed so we're going to degrade the experience. You can disable this anytime by clicking the Cruhahore icon.",
+        iconUrl: appIconUrl
+      });
+
       break;
     default:
       console.log(

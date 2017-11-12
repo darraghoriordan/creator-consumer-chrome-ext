@@ -3,7 +3,14 @@
   "description":
     "Stop consuming. Start creating. Break free from addictive social media",
   "version": "0.0.1",
-  "permissions": ["tabs", "activeTab", "http://*/*", "https://*/*", "*://*/*"],
+  "permissions": [
+    "tabs",
+    "activeTab",
+    "notifications",
+    "http://*/*",
+    "https://*/*",
+    "*://*/*"
+  ],
   "background": {
     "scripts": ["background.js"],
     "persistent": false

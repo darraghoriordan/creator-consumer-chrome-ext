@@ -1,9 +1,9 @@
 console.log("consumerMonitor loaded!");
 var scrollEnabled = true;
 var lastScrollTop = getScrollPosition();
-var scrollLimit = lastScrollTop + 1000;
+var scrollLimit = lastScrollTop + 3000;
 var scrollDetectionDebounce = 2000;
-var titleTimer; 
+var titleTimer;
 
 window.onscroll = function() {
   if (!scrollEnabled) {
@@ -74,14 +74,24 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     // and only run the correct one for the page/tab
     /* facebook is jewelCount */
     applyStylesToCounters(document.getElementsByClassName("jewelCount"));
+    /* facebook likes is _ipp */
+    applyStylesToCounters(document.getElementsByClassName("_ipp"));
     /*  twitter is .global-nav .count */
     applyStylesToCounters(document.getElementsByClassName("count"));
+    /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
+    applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
+    /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
+    applyStylesToCounters(
+      document.getElementsByClassName("ProfileTweet-action--favorite")
+    );
+    /* twitter new tweets bar */
+    applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
     /* linkedin is nav-item__badge */
     applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
 
     titleTimer = setInterval(function() {
-        changeTitle();
-      }, 1000);
+      changeTitle();
+    }, 1000);
   }
   if (request.directive == "turn-off-notification-styles") {
     //apply for each site - maybe this can be pulled in through config laters

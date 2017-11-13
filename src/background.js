@@ -10,26 +10,33 @@ var siteList = ["facebook.com", "twitter.com", "pinterest.com", "linkedin.com"];
   badgeIsInitialised(initialiseBadgeCallback);
 })();
 
-chrome.browserAction.onClicked.addListener(function(tab) {
+chrome.browserAction.onClicked.addListener(function onClickedListener(tab) {
+  chrome.extension.onRequest.removeListener(onClickedListener);
   console.log("browser action clicked called for " + tab.title);
-  extensionIsActive(toggleExtensionActive);
-  turnOffGreyScale();
+  extensionIsActive(tab, toggleExtensionActive);
+  turnOffGreyScale(tab.id);
 });
 
-chrome.tabs.onUpdated.addListener(function(tabId, info, tab) {
-  if (info && info.status == "complete") {
+chrome.tabs.onUpdated.addListener(function tabUpdatedListener(
+  tabId,
+  info,
+  tab
+) {
+  chrome.extension.onRequest.removeListener(tabUpdatedListener);
+  if (info && info.status && tab && tab.status == "complete") {
     console.log(
       "on updated called for " + tab.title + " because " + info.status
     );
+
     isInSiteList(tab, injectSumtorScripts);
-    extensionIsActive(applyConstantPageMods);
+    extensionIsActive(tab, applyConstantPageMods);
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab) {
   console.log("on created called for " + tab.title);
   isInSiteList(tab, injectSumtorScripts);
-  extensionIsActive(applyConstantPageMods);
+  extensionIsActive(tab, applyConstantPageMods);
 });
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
@@ -38,14 +45,15 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
       console.log(
         "message request: " + request.directive + " from: " + sender.tab.title
       );
-      extensionIsActive(setGreyscaleCallBack);
+      extensionIsActive(sender.tab,setGreyscaleCallBack);
 
       sendResponse({}); // sending back empty response to sender
       var appIconUrl = chrome.runtime.getURL("/icons/cru_logo_sq128.png");
       chrome.notifications.create(null, {
         type: "basic",
         title: "Uh-Oh! You're getting lost",
-        message: "It looks like you're getting lost in the feed so we're going to degrade the experience. You can disable this anytime by clicking the Cruhahore icon.",
+        message:
+          "It looks like you're getting lost in the feed so we're going to degrade the experience. You can disable this anytime by clicking the Cruhahore icon.",
         iconUrl: appIconUrl
       });
 
@@ -67,14 +75,14 @@ function badgeIsInitialised(callback) {
   });
 }
 
-function extensionIsActive(callback) {
+function extensionIsActive(tab, callback) {
   chrome.browserAction.getBadgeText({}, function(result) {
     var extensionIsActive = result === "on";
-    callback(extensionIsActive);
+    callback(tab, extensionIsActive);
   });
 }
 
-function toggleExtensionActive(currentValue) {
+function toggleExtensionActive(tab, currentValue) {
   if (currentValue) {
     console.log("turning off cruhahore extension");
     setBadgeTextOff();
@@ -83,7 +91,7 @@ function toggleExtensionActive(currentValue) {
   }
   console.log("turning on cruhahore extension");
   setBadgeTextOn();
-  applyDisruptiveNotificationStyles();
+  applyDisruptiveNotificationStylesAllTabs();
 }
 
 function setBadgeTextOff() {
@@ -114,46 +122,46 @@ function isInSiteList(tab, callback) {
 
 function injectSumtorScripts(tabItem) {
   console.log("Inserting monitor script to " + tabItem.title);
-  injectStylesheet(notificationDisruptionStylesheetName);
-  injectMonitorScript();
+  injectStylesheet(tabItem.id, notificationDisruptionStylesheetName);
+  injectMonitorScript(tabItem.id);
 }
 
-function injectMonitorScript() {
-  chrome.tabs.executeScript(null, {
+function injectMonitorScript(tabId) {
+  chrome.tabs.executeScript(tabId, {
     file: monitorScriptName
   });
 }
 
-function initialiseBadgeCallback(badgeInitialised) {
+function initialiseBadgeCallback(tabId, badgeInitialised) {
   if (!badgeInitialised) {
-    setBadgeTextOn();
+    setBadgeTextOn(tabId);
   }
 }
 
-function setGreyscaleCallBack(activeStatus) {
+function setGreyscaleCallBack(tab, activeStatus) {
   if (activeStatus) {
-    turnOnGreyScale();
+    turnOnGreyScale(tab.id);
   }
 }
 
-function turnOffGreyScale() {
-  injectStylesheet(offStylesheetName);
+function turnOffGreyScale(tabId) {
+  injectStylesheet(tabId, offStylesheetName);
 }
 
-function turnOnGreyScale() {
-  injectStylesheet(transitionStylesheetName);
+function turnOnGreyScale(tabId) {
+  injectStylesheet(tabId, transitionStylesheetName);
 }
 
-function injectStylesheet(scriptName) {
+function injectStylesheet(tabId, scriptName) {
   console.log("inserting stylesheet " + scriptName);
-  chrome.tabs.insertCSS(null, {
+  chrome.tabs.insertCSS(tabId, {
     file: scriptName
   });
 }
 
-function applyConstantPageMods(extensionActive) {
+function applyConstantPageMods(tab, extensionActive) {
   if (extensionActive) {
-    applyDisruptiveNotificationStyles();
+    applyDisruptiveNotificationStyles(tab);
   }
 }
 
@@ -175,20 +183,22 @@ function turnOffDisruptiveNotificationStyles() {
     });
   });
 }
-
-function applyDisruptiveNotificationStyles() {
+function applyDisruptiveNotificationStyles(tabItem) {
+  isInSiteList(tabItem, function(tabItem) {
+    console.log("sending disrupt notifications message to " + tabItem.title);
+    chrome.tabs.sendMessage(
+      tabItem.id,
+      {
+        directive: "apply-notification-styles"
+      },
+      function(response) {}
+    );
+  });
+}
+function applyDisruptiveNotificationStylesAllTabs() {
   chrome.tabs.query({}, function(tabs) {
     tabs.forEach(function(item) {
-      isInSiteList(item, function(item) {
-        console.log("sending disrupt notifications message to " + item.title);
-        chrome.tabs.sendMessage(
-          item.id,
-          {
-            directive: "apply-notification-styles"
-          },
-          function(response) {}
-        );
-      });
+      applyDisruptiveNotificationStyles(item);
     });
   });
 }

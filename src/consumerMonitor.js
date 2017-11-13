@@ -1,17 +1,19 @@
 console.log("Cruhahore monitor loaded!");
-var scrollEnabled = true;
+var scrollDetectionEnabled = true;
 var lastScrollTop = getScrollPosition();
+//use time or distance, or both?
 var scrollLimit = lastScrollTop + 3000;
-var scrollDetectionDebounce = 3000;
+var scrollDetectionDebounce = 10000;
 var titleTimer;
 
+// SCROLL DETECTION STUFF
 window.onscroll = function() {
-  if (!scrollEnabled) {
+  if (!scrollDetectionEnabled) {
     return;
   }
-  scrollEnabled = false;
+  scrollDetectionEnabled = false;
   return setTimeout(function() {
-    scrollEnabled = true;
+    scrollDetectionEnabled = true;
     scrollEventHandler();
   }, scrollDetectionDebounce);
 };
@@ -26,7 +28,8 @@ function scrollEventHandler() {
     try {
       chrome.runtime.sendMessage(
         { directive: "scroll-limit-exceeded" },
-        function(response) {}
+        function(response) {
+        }
       );
       //reset the scroll pos
       lastScrollTop = getScrollPosition();
@@ -57,6 +60,9 @@ function getScrollPosition() {
   }
   return scrollPosition;
 }
+
+// STUFF WITH ON PAGE STYLES
+
 function applyStylesToCounters(htmlElementCollection) {
   [].forEach.call(htmlElementCollection, function(element) {
     element.classList.add("sumtor-hide-notification");
@@ -74,30 +80,32 @@ function changeTitle() {
 
 chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
   if (request.directive == "apply-notification-styles") {
-    //apply for each site - maybe this can be pulled in through config laters
-    // and only run the correct one for the page/tab
-    // or at least in to array. just lazy for now.
-    /* facebook is jewelCount */
-    applyStylesToCounters(document.getElementsByClassName("jewelCount"));
-    /* facebook likes is _ipp */
-    applyStylesToCounters(document.getElementsByClassName("_ipp"));
-    /*  twitter is .global-nav .count */
-    applyStylesToCounters(document.getElementsByClassName("count"));
-    /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
-    applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
-    /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
-    applyStylesToCounters(
-      document.getElementsByClassName("ProfileTweet-action--favorite")
-    );
-    /* twitter new tweets bar */
-    applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
-
-    /* linkedin is nav-item__badge */
-    applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
-    applyStylesToCounters(
-      document.getElementsByClassName("feed-base-social-counts")
-    );
     titleTimer = setInterval(function() {
+      //apply for each site - maybe this can be pulled in through config laters
+      // and only run the correct one for the page/tab
+      // or at least in to array. just lazy for now.
+      /* facebook is jewelCount */
+      applyStylesToCounters(document.getElementsByClassName("jewelCount"));
+      /* facebook likes is _ipp */
+      applyStylesToCounters(document.getElementsByClassName("_ipp"));
+      applyStylesToCounters(document.getElementsByClassName("_ipn"));
+      /*  twitter is .global-nav .count */
+      applyStylesToCounters(document.getElementsByClassName("count"));
+      /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
+      applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
+      /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
+      applyStylesToCounters(
+        document.getElementsByClassName("ProfileTweet-action--favorite")
+      );
+      /* twitter new tweets bar */
+      applyStylesToCounters(document.getElementsByClassName("new-tweets-bar"));
+
+      /* linkedin is nav-item__badge */
+      applyStylesToCounters(document.getElementsByClassName("nav-item__badge"));
+      applyStylesToCounters(document.getElementsByClassName("like_toggle"));
+      applyStylesToCounters(
+        document.getElementsByClassName("feed-base-social-counts")
+      );
       changeTitle();
     }, 1000);
   }
@@ -108,6 +116,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     removeStylesFromCounters(document.getElementsByClassName("jewelCount"));
     /* facebook likes is _ipp */
     removeStylesFromCounters(document.getElementsByClassName("_ipp"));
+    removeStylesFromCounters(document.getElementsByClassName("_ipn"));
     /*  twitter is .global-nav .count */
     removeStylesFromCounters(document.getElementsByClassName("count"));
     /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
@@ -120,6 +129,7 @@ chrome.runtime.onMessage.addListener(function(request, sender, sendResponse) {
     removeStylesFromCounters(document.getElementsByClassName("new-tweets-bar"));
 
     /* linkedin is nav-item__badge */
+    removeStylesFromCounters(document.getElementsByClassName("like_toggle"));
     removeStylesFromCounters(
       document.getElementsByClassName("nav-item__badge")
     );

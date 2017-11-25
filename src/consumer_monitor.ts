@@ -1,7 +1,8 @@
-console.log("Cruhahore monitor loaded!");
+
 if (monitorScriptLoaded) {
   console.log("Cruhahore monitor attempted to load but already loaded.");
 } else {
+  console.log("Cruhahore monitor loaded!");
   var monitorScriptLoaded: boolean = true;
 
   var scrollDetectionEnabled: boolean = true;
@@ -9,9 +10,9 @@ if (monitorScriptLoaded) {
   // use time or distance, or both?
   var scrollLimit: number = lastScrollTop + 3000;
   var scrollDetectionDebounce: number = 10000;
-  var titleTimer;
+  var titleTimer: number;
 
-  // SCROLL DETECTION STUFF
+  // sCROLL DETECTION STUFF
   window.onscroll = function(): number {
     if (!scrollDetectionEnabled) {
       return;

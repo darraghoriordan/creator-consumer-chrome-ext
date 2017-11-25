@@ -108,7 +108,7 @@ if (monitorScriptLoaded) {
         );
         /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
         applyStylesToCounters(
-          document.getElementsByClassName("ProfileTweet-action--favorite")
+          document.getElementsByClassName("ProfileTweet-actionCountForPresentation")
         );
         /* twitter new tweets bar */
         applyStylesToCounters(
@@ -142,7 +142,7 @@ if (monitorScriptLoaded) {
       );
       /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
       removeStylesFromCounters(
-        document.getElementsByClassName("ProfileTweet-action--favorite")
+        document.getElementsByClassName("ProfileTweet-actionCountForPresentation")
       );
       /* twitter new tweets bar */
       removeStylesFromCounters(

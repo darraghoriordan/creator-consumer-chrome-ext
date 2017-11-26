@@ -6,10 +6,10 @@ var notificationDisruptionStylesheetName: string =
 var monitorScriptName: string = "js/consumer_monitor.js";
 var vendorScriptName: string = "js/vendor.js";
 var siteList: Array<string> = [
-  "facebook.com",
-  "twitter.com",
-  "pinterest.com",
-  "linkedin.com"
+  // "facebook.com",
+  // "twitter.com",
+  // "pinterest.com",
+  // "linkedin.com"
 ];
 var setHarshScrollActions: boolean = false;
 

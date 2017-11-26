@@ -15,7 +15,13 @@ var setHarshScrollActions: boolean = false;
 
 (function initialiseExtension(): void {
   badgeIsInitialised(initialiseBadgeCallback);
+  polling();
 })();
+function polling():void {
+  console.log("polling");
+  applyDisruptiveNotificationStylesAllTabs();
+  setTimeout(polling, 1000 * 10);
+}
 
 chrome.browserAction.onClicked.addListener(function onClickedListener(
   tab: chrome.tabs.Tab
@@ -217,13 +223,12 @@ function turnOffDisruptiveNotificationStyles(): void {
   });
 }
 function applyDisruptiveNotificationStyles(tabItem: chrome.tabs.Tab): void {
-  isInSiteList(tabItem, function(tabItem: chrome.tabs.Tab): void {
     console.log("sending disrupt notifications message to " + tabItem.title);
     chrome.tabs.sendMessage(tabItem.id, {
       directive: "apply-notification-styles"
     });
-  });
 }
+
 function applyDisruptiveNotificationStylesAllTabs(): void {
   chrome.tabs.query({}, function(tabs: Array<chrome.tabs.Tab>): void {
     tabs.forEach(function(item: chrome.tabs.Tab): void {

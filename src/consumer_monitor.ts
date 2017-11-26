@@ -10,7 +10,6 @@ if (monitorScriptLoaded) {
   // use time or distance, or both?
   var scrollLimit: number = lastScrollTop + 3000;
   var scrollDetectionDebounce: number = 10000;
-  var titleTimer: number;
 
   // sCROLL DETECTION STUFF
   window.onscroll = function(): number {
@@ -73,6 +72,7 @@ if (monitorScriptLoaded) {
       element.classList.add("sumtor-hide-notification");
     });
   }
+
   function removeStylesFromCounters(
     htmlElementCollection: HTMLCollectionOf<Element>
   ): void {
@@ -80,6 +80,7 @@ if (monitorScriptLoaded) {
       element.classList.remove("sumtor-hide-notification");
     });
   }
+
   function changeTitle(): void {
     var regExp: RegExp = /\(([^)]+)\)/;
     document.title = document.title.replace(regExp, "");
@@ -91,7 +92,6 @@ if (monitorScriptLoaded) {
     sendResponse: any
   ): void {
     if (request.directive === "apply-notification-styles") {
-      titleTimer = setInterval(function(): void {
         // apply for each site - maybe this can be pulled in through config laters
         // and only run the correct one for the page/tab
         // or at least in to array. just lazy for now.
@@ -124,7 +124,6 @@ if (monitorScriptLoaded) {
           document.getElementsByClassName("feed-base-social-counts")
         );
         changeTitle();
-      }, 1000);
     }
     if (request.directive === "turn-off-notification-styles") {
       // apply for each site - maybe this can be pulled in through config laters
@@ -157,8 +156,6 @@ if (monitorScriptLoaded) {
       removeStylesFromCounters(
         document.getElementsByClassName("feed-base-social-counts")
       );
-
-      clearInterval(titleTimer);
     }
   });
 }

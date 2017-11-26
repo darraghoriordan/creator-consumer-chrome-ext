@@ -12,7 +12,7 @@
     {
       "matches": [
         "*://www.facebook.com/*",
-        "*://www.twitter.com/*",
+        "*://twitter.com/*",
         "*://www.linkedin.com/*"
       ],
       "css": ["css/disrupt-notification-hooks.css"],

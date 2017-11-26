@@ -1,25 +1,15 @@
 "use strict";
 var offStylesheetName: string = "./css/greyscale-off.css";
 var transitionStylesheetName: string = "./css/greyscale-timer.css";
-var notificationDisruptionStylesheetName: string =
-  "./css/disrupt-notification-hooks.css";
-var monitorScriptName: string = "js/consumer_monitor.js";
-var vendorScriptName: string = "js/vendor.js";
-var siteList: Array<string> = [
-  // "facebook.com",
-  // "twitter.com",
-  // "pinterest.com",
-  // "linkedin.com"
-];
 var setHarshScrollActions: boolean = false;
 
 (function initialiseExtension(): void {
   badgeIsInitialised(initialiseBadgeCallback);
   polling();
 })();
-function polling():void {
+function polling(): void {
   console.log("polling");
-  applyDisruptiveNotificationStylesAllTabs();
+  extensionIsActive(null, applyDisruptiveNotificationStylesAllTabs);
   setTimeout(polling, 1000 * 10);
 }
 
@@ -29,7 +19,6 @@ chrome.browserAction.onClicked.addListener(function onClickedListener(
   chrome.extension.onRequest.removeListener(onClickedListener);
   console.log("browser action clicked called for " + tab.title);
   extensionIsActive(tab, toggleExtensionActive);
-  turnOffGreyScale(tab.id);
 });
 
 chrome.tabs.onUpdated.addListener(function tabUpdatedListener(
@@ -43,16 +32,15 @@ chrome.tabs.onUpdated.addListener(function tabUpdatedListener(
       "on updated called for " + tab.title + " because " + info.status
     );
 
-    isInSiteList(tab, injectSumtorScripts);
     extensionIsActive(tab, applyConstantPageMods);
   }
 });
 
 chrome.tabs.onCreated.addListener(function(tab: chrome.tabs.Tab): void {
   console.log("on created called for " + tab.title);
-  isInSiteList(tab, injectSumtorScripts);
   extensionIsActive(tab, applyConstantPageMods);
 });
+
 function sendNotification(tab: chrome.tabs.Tab, activeStatus: boolean): void {
   if (!activeStatus) {
     return;
@@ -73,16 +61,6 @@ chrome.runtime.onMessage.addListener(function(
   sendResponse: any
 ): void {
   switch (request.directive) {
-    case "scroll-limit-exceeded":
-      console.log(
-        "message request: " + request.directive + " from: " + sender.tab.title
-      );
-      if (setHarshScrollActions) {
-        extensionIsActive(sender.tab, setGreyscaleCallBack);
-        extensionIsActive(sender.tab, sendNotification);
-        sendResponse({}); // sending back empty response to sender
-      }
-      break;
     default:
       console.log(
         "Unmatched request of '" +
@@ -122,7 +100,7 @@ function toggleExtensionActive(
   }
   console.log("turning on cruhahore extension");
   setBadgeTextOn();
-  applyDisruptiveNotificationStylesAllTabs();
+  applyDisruptiveNotificationStylesAllTabs(null, true);
 }
 
 function setBadgeTextOff(): void {
@@ -143,60 +121,10 @@ function setBadgeTextOn(): void {
   });
 }
 
-function isInSiteList(
-  tab: chrome.tabs.Tab,
-  callback: (tab: chrome.tabs.Tab) => void
-): void {
-  siteList.forEach(function(element: string): void {
-    if (tab.url.toLowerCase().indexOf(element) > 0) {
-      callback(tab);
-    }
-  }, this);
-}
-
-function injectSumtorScripts(tabItem: chrome.tabs.Tab): void {
-  console.log("Inserting monitor script to " + tabItem.title);
-  injectStylesheet(tabItem.id, notificationDisruptionStylesheetName);
-  injectMonitorScript(tabItem.id);
-}
-
-function injectMonitorScript(tabId: number): void {
-    chrome.tabs.executeScript(tabId, {
-        file: vendorScriptName
-      });
-  chrome.tabs.executeScript(tabId, {
-    file: monitorScriptName
-  });
-}
-
 function initialiseBadgeCallback(badgeInitialised: boolean): void {
   if (!badgeInitialised) {
     setBadgeTextOn();
   }
-}
-
-function setGreyscaleCallBack(
-  tab: chrome.tabs.Tab,
-  activeStatus: boolean
-): void {
-  if (activeStatus) {
-    turnOnGreyScale(tab.id);
-  }
-}
-
-function turnOffGreyScale(tabId: number): void {
-  injectStylesheet(tabId, offStylesheetName);
-}
-
-function turnOnGreyScale(tabId: number): void {
-  injectStylesheet(tabId, transitionStylesheetName);
-}
-
-function injectStylesheet(tabId: number, scriptName: string): void {
-  console.log("inserting stylesheet " + scriptName);
-  chrome.tabs.insertCSS(tabId, {
-    file: scriptName
-  });
 }
 
 function applyConstantPageMods(
@@ -211,25 +139,28 @@ function applyConstantPageMods(
 function turnOffDisruptiveNotificationStyles(): void {
   chrome.tabs.query({}, function(tabs: Array<chrome.tabs.Tab>): void {
     tabs.forEach(function(item: chrome.tabs.Tab): void {
-      isInSiteList(item, function(item: chrome.tabs.Tab): void {
-        console.log(
-          "sending stop disrupting notifications message to " + item.title
-        );
-        chrome.tabs.sendMessage(item.id, {
-          directive: "turn-off-notification-styles"
-        });
+      console.log(
+        "sending stop disrupting notifications message to " + item.title
+      );
+      chrome.tabs.sendMessage(item.id, {
+        directive: "turn-off-notification-styles"
       });
     });
   });
 }
 function applyDisruptiveNotificationStyles(tabItem: chrome.tabs.Tab): void {
-    console.log("sending disrupt notifications message to " + tabItem.title);
-    chrome.tabs.sendMessage(tabItem.id, {
-      directive: "apply-notification-styles"
-    });
+  console.log("sending disrupt notifications message to " + tabItem.title);
+  chrome.tabs.sendMessage(tabItem.id, {
+    directive: "apply-notification-styles"
+  });
 }
 
-function applyDisruptiveNotificationStylesAllTabs(): void {
+function applyDisruptiveNotificationStylesAllTabs(tab:chrome.tabs.Tab,
+  extensionIsActive: boolean
+): void {
+  if (!extensionIsActive) {
+    return;
+  }
   chrome.tabs.query({}, function(tabs: Array<chrome.tabs.Tab>): void {
     tabs.forEach(function(item: chrome.tabs.Tab): void {
       applyDisruptiveNotificationStyles(item);

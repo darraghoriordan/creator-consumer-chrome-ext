@@ -1,4 +1,3 @@
-
 if (monitorScriptLoaded) {
   console.log("Cruhahore monitor attempted to load but already loaded.");
 } else {
@@ -10,7 +9,18 @@ if (monitorScriptLoaded) {
   // use time or distance, or both?
   var scrollLimit: number = lastScrollTop + 3000;
   var scrollDetectionDebounce: number = 10000;
-
+  var hiddenClassNames: string[] = [
+    "jewelCount",
+    "_ipp",
+    "_ipn",
+    "count",
+    "new-tweets-bar",
+    "ProfileTweet-actionCountForPresentation",
+    "new-tweets-bar",
+    "nav-item__badge",
+    "like_toggle",
+    "feed-base-social-counts"
+  ];
   // sCROLL DETECTION STUFF
   window.onscroll = function(): number {
     if (!scrollDetectionEnabled) {
@@ -92,70 +102,19 @@ if (monitorScriptLoaded) {
     sendResponse: any
   ): void {
     if (request.directive === "apply-notification-styles") {
-        // apply for each site - maybe this can be pulled in through config laters
-        // and only run the correct one for the page/tab
-        // or at least in to array. just lazy for now.
-        /* facebook is jewelCount */
-        applyStylesToCounters(document.getElementsByClassName("jewelCount"));
-        /* facebook likes is _ipp */
-        applyStylesToCounters(document.getElementsByClassName("_ipp"));
-        applyStylesToCounters(document.getElementsByClassName("_ipn"));
-        /*  twitter is .global-nav .count */
-        applyStylesToCounters(document.getElementsByClassName("count"));
-        /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
-        applyStylesToCounters(
-          document.getElementsByClassName("new-tweets-bar")
-        );
-        /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
-        applyStylesToCounters(
-          document.getElementsByClassName("ProfileTweet-actionCountForPresentation")
-        );
-        /* twitter new tweets bar */
-        applyStylesToCounters(
-          document.getElementsByClassName("new-tweets-bar")
-        );
-
-        /* linkedin is nav-item__badge */
-        applyStylesToCounters(
-          document.getElementsByClassName("nav-item__badge")
-        );
-        applyStylesToCounters(document.getElementsByClassName("like_toggle"));
-        applyStylesToCounters(
-          document.getElementsByClassName("feed-base-social-counts")
-        );
-        changeTitle();
+      // apply for each site - maybe this can be pulled in through config laters
+      // and only run the correct one for the page/tab
+      hiddenClassNames.forEach((className: string) => {
+        applyStylesToCounters(document.getElementsByClassName(className));
+      });
+      changeTitle();
     }
     if (request.directive === "turn-off-notification-styles") {
       // apply for each site - maybe this can be pulled in through config laters
       // and only run the correct one for the page/tab
-      /* facebook is jewelCount */
-      removeStylesFromCounters(document.getElementsByClassName("jewelCount"));
-      /* facebook likes is _ipp */
-      removeStylesFromCounters(document.getElementsByClassName("_ipp"));
-      removeStylesFromCounters(document.getElementsByClassName("_ipn"));
-      /*  twitter is .global-nav .count */
-      removeStylesFromCounters(document.getElementsByClassName("count"));
-      /* twitter new tweets bar new-tweets-bar js-new-tweets-bar*/
-      removeStylesFromCounters(
-        document.getElementsByClassName("new-tweets-bar")
-      );
-      /* twitter like buttons ProfileTweet-action ProfileTweet-action--favorite js-toggleState */
-      removeStylesFromCounters(
-        document.getElementsByClassName("ProfileTweet-actionCountForPresentation")
-      );
-      /* twitter new tweets bar */
-      removeStylesFromCounters(
-        document.getElementsByClassName("new-tweets-bar")
-      );
-
-      /* linkedin is nav-item__badge */
-      removeStylesFromCounters(document.getElementsByClassName("like_toggle"));
-      removeStylesFromCounters(
-        document.getElementsByClassName("nav-item__badge")
-      );
-      removeStylesFromCounters(
-        document.getElementsByClassName("feed-base-social-counts")
-      );
+      hiddenClassNames.forEach((className: string) => {
+        removeStylesFromCounters(document.getElementsByClassName(className));
+      });
     }
   });
 }

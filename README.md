@@ -4,6 +4,9 @@ Stop consuming. Start creating. Break free from addictive social media
 
 started with https://github.com/chibat/chrome-extension-typescript-starter
 
+Turns off some hooks on social media sites.
+Trialed some greyscaling but didn't finish it!
+
 ## Prerequisites
 
 * [node + npm](https://nodejs.org/) (Current Version)
